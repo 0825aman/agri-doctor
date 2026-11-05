@@ -727,10 +727,11 @@ with col_preview:
 st.divider()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# INFORMATION TABS — 9 Guardrail Categories + 2 Evaluation Matrix tabs
+# LIVE GUARDRAIL RESULTS + EVALUATION MATRIX TABS
 # ══════════════════════════════════════════════════════════════════════════════
-st.markdown("<h3 style='color:#86efac; margin-bottom:0.2rem;'>📚 Reference Guide</h3>", unsafe_allow_html=True)
-st.caption("Explore all guardrail categories and evaluation matrices used in this system.")
+st.markdown("<h3 style='color:#86efac; margin-bottom:0.2rem;'>🛡️ Guardrail Audit & Evaluation Metrics</h3>",
+            unsafe_allow_html=True)
+st.caption("Run a diagnosis to see live guardrail results in each category tab.")
 
 (
     tab_gr1, tab_gr2, tab_gr3, tab_gr4, tab_gr5,
@@ -750,245 +751,117 @@ st.caption("Explore all guardrail categories and evaluation matrices used in thi
     "🤖 Agentic AI Metrics",
 ])
 
-# ── Tab 1: Input Guardrails ────────────────────────────────────────────────────
+# ── Shared helper: render guardrail result cards for one category ──────────────
+def _render_guardrail_tab(category_key: str, title: str, subtitle: str):
+    """Pull entries for this category from session_state and render as cards."""
+    audit = st.session_state.get("guardrail_audit", [])
+    entries = [e for e in audit if e.get("category", "").lower() == category_key.lower()]
+
+    st.markdown(f"#### {title}")
+
+    if not entries:
+        st.markdown("""
+        <div class="glass-card" style="text-align:center; padding:2rem; border-style:dashed;">
+          <div style="font-size:2.2rem; margin-bottom:0.5rem;">🔍</div>
+          <div style="color:rgba(134,239,172,0.65); font-size:0.95rem;">
+            No results yet — run a diagnosis to see live guardrail checks here.
+          </div>
+        </div>""", unsafe_allow_html=True)
+        return
+
+    passed  = [e for e in entries if e["passed"]]
+    flagged = [e for e in entries if not e["passed"]]
+
+    # Summary bar
+    total = len(entries)
+    p_pct = int(len(passed)  / total * 100)
+    f_pct = int(len(flagged) / total * 100)
+    st.markdown(f"""
+    <div style="display:flex; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <div class="glass-card" style="padding:0.6rem 1.1rem; margin:0;
+           border-color:rgba(34,197,94,0.40); background:rgba(34,197,94,0.07); flex:1; min-width:120px;">
+        <div style="font-size:1.5rem; font-weight:700; color:#86efac;">{len(passed)}</div>
+        <div style="font-size:0.78rem; color:rgba(134,239,172,0.65);">✅ Passed ({p_pct}%)</div>
+      </div>
+      <div class="glass-card" style="padding:0.6rem 1.1rem; margin:0;
+           border-color:rgba(251,191,36,0.35); background:rgba(251,191,36,0.05); flex:1; min-width:120px;">
+        <div style="font-size:1.5rem; font-weight:700; color:#fbbf24;">{len(flagged)}</div>
+        <div style="font-size:0.78rem; color:rgba(251,191,36,0.65);">⚠️ Flagged ({f_pct}%)</div>
+      </div>
+      <div class="glass-card" style="padding:0.6rem 1.1rem; margin:0;
+           border-color:rgba(96,165,250,0.30); background:rgba(59,130,212,0.06); flex:1; min-width:120px;">
+        <div style="font-size:1.5rem; font-weight:700; color:#93c5fd;">{total}</div>
+        <div style="font-size:0.78rem; color:rgba(147,197,253,0.65);">🔢 Total Checks</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Result cards — 3 per row
+    cols = st.columns(3)
+    for idx, entry in enumerate(entries):
+        sev  = entry.get("severity", "info")
+        ok   = entry["passed"]
+        if ok:
+            border = "rgba(34,197,94,0.35)"
+            bg     = "rgba(34,197,94,0.05)"
+            badge_color = "#86efac"
+            status_icon = "✅"
+            status_text = "PASSED"
+        elif sev == "critical":
+            border = "rgba(239,68,68,0.45)"
+            bg     = "rgba(239,68,68,0.07)"
+            badge_color = "#f87171"
+            status_icon = "🚫"
+            status_text = "BLOCKED"
+        else:
+            border = "rgba(251,191,36,0.40)"
+            bg     = "rgba(251,191,36,0.06)"
+            badge_color = "#fbbf24"
+            status_icon = "⚠️"
+            status_text = "FLAGGED"
+
+        msg = entry.get("message", "")
+        ts  = entry.get("timestamp", "")[:19].replace("T", " ")
+
+        with cols[idx % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="border-color:{border}; background:{bg};
+                 min-height:140px; padding:0.85rem 1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;
+                   margin-bottom:0.45rem;">
+                <span style="color:{badge_color}; font-weight:700; font-size:0.88rem;">
+                  {status_icon} {entry['check']}
+                </span>
+                <span style="background:{bg}; border:1px solid {border};
+                      color:{badge_color}; font-size:0.7rem; font-weight:600;
+                      padding:2px 8px; border-radius:12px;">
+                  {status_text}
+                </span>
+              </div>
+              <div style="color:rgba(210,235,210,0.85); font-size:0.83rem;
+                   line-height:1.5; margin-bottom:0.4rem;">{msg}</div>
+              <div style="color:rgba(134,239,172,0.38); font-size:0.72rem;">{ts}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tabs 1–9: Live guardrail results per category ─────────────────────────────
 with tab_gr1:
-    st.markdown("#### 🔒 Input Guardrails")
-    st.caption("Validate user inputs before passing them to any AI agent.")
-    cols = st.columns(3)
-    items = [
-        ("🎯", "Prompt Injection Detection",
-         "Detects and blocks attempts to override agent instructions using crafted inputs."),
-        ("🚫", "Malicious Input Detection",
-         "Identifies harmful, off-topic, or abusive content before it reaches the model."),
-        ("✅", "Input Validation",
-         "Verifies image format (JPG/PNG), file size (<10 MB), and field completeness."),
-        ("🪪", "PII Detection",
-         "Scans for personal data (email, phone, Aadhaar, PAN, credit card) and masks it."),
-        ("🙅", "Inappropriate Content Filtering",
-         "Blocks clearly off-topic keywords unrelated to agricultural diagnosis."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 2: Output Guardrails ────────────────────────────────────────────────────
+    _render_guardrail_tab("Input",       "🔒 Input Guardrails",       "")
 with tab_gr2:
-    st.markdown("#### 📤 Output Guardrails")
-    st.caption("Validate AI-generated responses before displaying them to users.")
-    cols = st.columns(3)
-    items = [
-        ("🌀", "Hallucination Detection",
-         "Detects when the model admits it cannot see or process the image — a key hallucination signal."),
-        ("🧪", "Factual Accuracy Validation",
-         "Checks for required structured sections (symptoms, confidence, causes) in agent output."),
-        ("☣️", "Toxicity & Harmful Content Filtering",
-         "Regex-based scan for toxic, offensive, or harmful language in every response."),
-        ("🔍", "Sensitive Information Filtering",
-         "Ensures no API keys, JWT tokens, or credentials leak into displayed output."),
-        ("📏", "Response Format Validation",
-         "Checks response length (min 30 / max 15,000 chars) and disclaimer presence."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 3: Tool Execution Guardrails ──────────────────────────────────────────
+    _render_guardrail_tab("Output",      "📤 Output Guardrails",      "")
 with tab_gr3:
-    st.markdown("#### 🔧 Tool Execution Guardrails")
-    st.caption("Control how AI agents interact with external tools and APIs.")
-    cols = st.columns(3)
-    items = [
-        ("📋", "Tool Access Permissions",
-         "Only whitelisted IBM watsonx model IDs are permitted — all others are blocked."),
-        ("🔑", "API Authorization",
-         "Endpoint URL is validated against an approved IBM region list before any call."),
-        ("🎛️", "Function-Call Validation",
-         "Token limits (1024/1500) and temperature ceiling (0.7) enforced per agent."),
-        ("🚧", "Restricted Tool Execution",
-         "Model IDs entered in the sidebar are checked against the permitted list at runtime."),
-        ("🛑", "Prevention of Unauthorized Actions",
-         "Any model or endpoint outside the whitelist triggers a hard stop before execution."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 4: Data Guardrails ─────────────────────────────────────────────────────
+    _render_guardrail_tab("ToolExecution","🔧 Tool Execution Guardrails","")
 with tab_gr4:
-    st.markdown("#### 🗄️ Data Guardrails")
-    st.caption("Protect data accessed and processed by agents.")
-    cols = st.columns(3)
-    items = [
-        ("🔏", "Data Privacy Protection",
-         "PII patterns are detected and masked before any text is passed to a model."),
-        ("🎭", "Data Masking & Anonymization",
-         "Original filenames are replaced with SHA-256 hash aliases before processing."),
-        ("👁️", "Role-Based Data Access",
-         "Agent 1 only receives image data; Agent 2 only receives the diagnosis text."),
-        ("💾", "Database Access Restrictions",
-         "Images are processed in-memory only — never written to disk or any database."),
-        ("🚫", "Prevention of Unauthorized Retrieval",
-         "No external data sources are queried; all processing is contained within the pipeline."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 5: Security Guardrails ─────────────────────────────────────────────────
+    _render_guardrail_tab("Data",        "🗄️ Data Guardrails",        "")
 with tab_gr5:
-    st.markdown("#### 🔐 Security Guardrails")
-    st.caption("Protect the application from security threats.")
-    cols = st.columns(3)
-    items = [
-        ("💉", "Prompt Injection Protection",
-         "17 regex patterns detect and block injection attempts before they reach any model."),
-        ("🔓", "Jailbreak Detection",
-         "Scans for 11 jailbreak phrases (e.g. 'DAN mode', 'ignore your training')."),
-        ("🗄️", "SQL Injection Prevention",
-         "SQL keywords and patterns (DROP, SELECT, UNION) detected in all text fields."),
-        ("📡", "Cross-Agent Communication Security",
-         "Inter-agent payload is security-scanned at the handoff boundary before forwarding."),
-        ("🗝️", "Credential & Secret Management",
-         "API keys loaded from .env / st.secrets only — never hardcoded or logged."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 6: Operational Guardrails ──────────────────────────────────────────────
+    _render_guardrail_tab("Security",    "🔐 Security Guardrails",    "")
 with tab_gr6:
-    st.markdown("#### ⚙️ Operational Guardrails")
-    st.caption("Control agent execution and resource consumption.")
-    cols = st.columns(3)
-    items = [
-        ("⏱️", "Maximum Execution Time",
-         "Each agent is limited to 120 seconds. Timeout triggers a clear error message."),
-        ("🔢", "Token Usage Limits",
-         "Pathologist: max 1,024 tokens. Extension Officer: max 1,500 tokens."),
-        ("🚦", "API Rate Limiting",
-         "Rate limit (HTTP 429) errors are caught and shown with a retry prompt."),
-        ("🔄", "Maximum Agent Iterations",
-         "Each agent is limited to 2 calls per run. Exceeding this halts the pipeline."),
-        ("💰", "Cost Monitoring",
-         "Token counts and estimated USD cost are computed and shown after every run."),
-        ("🔁", "Retry & Failure Handling",
-         "Up to 3 retries per agent. All errors are caught and displayed with remediation hints."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 7: Human-in-the-Loop Guardrails ────────────────────────────────────────
+    _render_guardrail_tab("Operational", "⚙️ Operational Guardrails", "")
 with tab_gr7:
-    st.markdown("#### 👤 Human-in-the-Loop Guardrails")
-    st.caption("Ensure human approval and expert review for critical decisions.")
-    cols = st.columns(3)
-    items = [
-        ("🆘", "Expert Escalation Trigger",
-         "Keywords like 'unknown disease', 'severe', 'epidemic' trigger an escalation banner."),
-        ("🔬", "Chemical Treatment Notice",
-         "Any mention of pesticide or fungicide application triggers a safety warning banner."),
-        ("✋", "Manual Verification Prompt",
-         "All outputs are labelled as AI-generated preliminary assessments requiring expert verification."),
-        ("👨‍⚕️", "Escalation to Human Experts",
-         "Users are directed to local agricultural extension officers when confidence is low."),
-        ("📋", "Advisory Review Gate",
-         "Final report clearly labels both agent outputs and advises confirmation before any action."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 8: Multi-Agent Guardrails ──────────────────────────────────────────────
+    _render_guardrail_tab("HumanInLoop", "👤 Human-in-the-Loop Guardrails", "")
 with tab_gr8:
-    st.markdown("#### 🤝 Multi-Agent Guardrails")
-    st.caption("Ensure safe coordination between the Pathologist and Extension Officer agents.")
-    cols = st.columns(3)
-    items = [
-        ("🎫", "Agent-Level Access Control",
-         "Each agent is registered with permitted input/output types enforced at runtime."),
-        ("📝", "Task Assignment Validation",
-         "Agent 1 receives only image data; Agent 2 only receives the diagnosis — no cross-contamination."),
-        ("🔎", "Cross-Agent Output Verification",
-         "Agent 1 output is security-scanned before being passed to Agent 2."),
-        ("📡", "Agent Communication Monitoring",
-         "Handoff payload size, content, and security are validated at the agent boundary."),
-        ("🔃", "Conflict Resolution",
-         "If Agent 1 returns an empty/invalid response, the pipeline halts with a clear error."),
-        ("♾️", "Prevention of Infinite Loops",
-         "Per-agent call counters — max 5 iterations — prevent runaway agent execution."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-# ── Tab 9: Ethical & Compliance Guardrails ────────────────────────────────────
+    _render_guardrail_tab("MultiAgent",  "🤝 Multi-Agent Guardrails", "")
 with tab_gr9:
-    st.markdown("#### ⚖️ Ethical & Compliance Guardrails")
-    st.caption("Ensure responsible and compliant AI behaviour.")
-    cols = st.columns(3)
-    items = [
-        ("⚖️", "Bias Detection",
-         "Scans for absolute/generalizing language ('all farmers must', 'always apply')."),
-        ("🎯", "Fairness Validation",
-         "Responses are checked to avoid stereotyping farming practices or communities."),
-        ("💡", "Explainability",
-         "Agent outputs must contain causal reasoning markers (because, caused by, indicates)."),
-        ("📜", "Regulatory Compliance",
-         "Chemical recommendations include product label and local regulation references."),
-        ("🤝", "Responsible AI Principles",
-         "Every output is labelled preliminary. No fabricated dosages are presented as fact."),
-        ("🗂️", "Audit Trails",
-         "Every guardrail check is timestamped and stored in a full audit log shown in-app."),
-    ]
-    for i, (icon, title, desc) in enumerate(items):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="glass-card" style="min-height:130px;">
-              <div style="font-size:1.6rem;">{icon}</div>
-              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
-              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
+    _render_guardrail_tab("Ethics",      "⚖️ Ethical & Compliance Guardrails", "")
 
 # ── Tab 10: LLM Evaluation Metrics ────────────────────────────────────────────
 with tab_llm_eval:
@@ -1595,22 +1468,10 @@ if diagnose_btn:
             )
 
         # ══════════════════════════════════════════════════════════════════
-        # GUARDRAIL 9 — Audit Trail (expandable in UI)
+        # GUARDRAIL 9 — Store audit log in session_state for the tabs
         # ══════════════════════════════════════════════════════════════════
         audit_log = get_audit_log()
-        passed_count = sum(1 for e in audit_log if e["passed"])
-        warned_count = sum(1 for e in audit_log if not e["passed"])
-        with st.expander(
-            f"🛡️ Guardrail Audit Trail  —  {passed_count} passed / {warned_count} flagged",
-            expanded=False,
-        ):
-            for entry in audit_log:
-                icon = "✅" if entry["passed"] else ("⚠️" if entry["severity"] == "warning" else "🚫")
-                st.markdown(
-                    f"`{entry['timestamp'][:19].replace('T',' ')}`  "
-                    f"**[{entry['category']}]** {entry['check']}  {icon}  "
-                    f"{entry['message']}"
-                )
+        st.session_state["guardrail_audit"] = audit_log
 
         progress.progress(100, text="✅ Agri Doctor workflow complete!")
         status.success(
