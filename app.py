@@ -40,7 +40,7 @@ from guardrails import (
     GuardrailResult,
 )
 
-# Load .env file if present (silently ignored if missing)
+# Load .env (local dev). Silently ignored if missing (e.g. on Streamlit Cloud).
 load_dotenv()
 
 # ── Page configuration ────────────────────────────────────────────────────────
@@ -51,12 +51,21 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Constants (defaults — overridden by .env when present) ───────────────────
-IBM_ENDPOINT   = os.getenv("WATSONX_URL",          "https://us-south.ml.cloud.ibm.com")
-VISION_MODEL   = os.getenv("WATSONX_VISION_MODEL", "mistralai/mistral-small-3-1-24b-instruct-2503")
-TEXT_MODEL     = os.getenv("WATSONX_TEXT_MODEL",   "ibm/granite-4-h-small")
-PROJECT_ID     = os.getenv("WATSONX_PROJECT_ID",   "")
-_ENV_API_KEY   = os.getenv("WATSONX_API_KEY",      "")   # pre-fills sidebar; never shown in plaintext
+# ── Secret loader ─────────────────────────────────────────────────────────────
+# Priority: Streamlit Cloud secrets  >  .env file  >  empty string
+def _secret(key: str, default: str = "") -> str:
+    """Read from st.secrets (Streamlit Cloud) then fall back to os.getenv (.env)."""
+    try:
+        return st.secrets.get(key, os.getenv(key, default))
+    except Exception:
+        return os.getenv(key, default)
+
+# ── Constants (loaded from secrets / .env) ───────────────────────────────────
+IBM_ENDPOINT   = _secret("WATSONX_URL",          "https://us-south.ml.cloud.ibm.com")
+VISION_MODEL   = _secret("WATSONX_VISION_MODEL", "mistralai/mistral-small-3-1-24b-instruct-2503")
+TEXT_MODEL     = _secret("WATSONX_TEXT_MODEL",   "ibm/granite-4-h-small")
+PROJECT_ID     = _secret("WATSONX_PROJECT_ID",   "")
+_ENV_API_KEY   = _secret("WATSONX_API_KEY",      "")   # pre-fills sidebar; never shown in plaintext
 
 DISCLAIMER = (
     "⚠️  This diagnosis is an AI-generated preliminary assessment only. "
