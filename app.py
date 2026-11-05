@@ -51,6 +51,521 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── UI — Custom CSS & background animations ──────────────────────────────────
+st.markdown("""
+<style>
+/* ── Google Font ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── Root theme ── */
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* ══════════════════════════════════════════════════
+   ANIMATED PARTICLE BACKGROUND
+══════════════════════════════════════════════════ */
+.stApp {
+    background: linear-gradient(135deg, #0a1628 0%, #0d2b1a 40%, #0a2e0a 70%, #1a3a0a 100%);
+    min-height: 100vh;
+}
+
+/* Floating leaf particles */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        radial-gradient(circle at 15% 20%, rgba(34,197,94,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 85% 10%, rgba(59,130,212,0.10) 0%, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(34,197,94,0.06) 0%, transparent 55%),
+        radial-gradient(circle at 90% 60%, rgba(16,185,129,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 10% 70%, rgba(59,130,212,0.07) 0%, transparent 45%);
+    animation: bgPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes bgPulse {
+    0%   { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 1.0; transform: scale(1.05); }
+}
+
+/* Floating dots overlay */
+.stApp::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        radial-gradient(1.5px 1.5px at 10% 15%, rgba(134,239,172,0.35) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 25% 45%, rgba(134,239,172,0.25) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 40% 25%, rgba(96,165,250,0.30) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 70%, rgba(134,239,172,0.20) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 75% 35%, rgba(52,211,153,0.30) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 88% 80%, rgba(96,165,250,0.25) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 5%  85%, rgba(134,239,172,0.20) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 92% 20%, rgba(52,211,153,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 33% 90%, rgba(134,239,172,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 10%, rgba(96,165,250,0.20) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 55%, rgba(134,239,172,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 18% 60%, rgba(52,211,153,0.18) 0%, transparent 100%);
+    animation: floatDots 12s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes floatDots {
+    0%   { transform: translateY(0px)   translateX(0px); }
+    33%  { transform: translateY(-18px) translateX(8px); }
+    66%  { transform: translateY(-8px)  translateX(-12px); }
+    100% { transform: translateY(-22px) translateX(6px); }
+}
+
+/* ══════════════════════════════════════════════════
+   HERO HEADER BANNER
+══════════════════════════════════════════════════ */
+.hero-banner {
+    background: linear-gradient(135deg,
+        rgba(10,22,40,0.92) 0%,
+        rgba(13,43,26,0.92) 50%,
+        rgba(10,46,10,0.88) 100%);
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 20px;
+    padding: 2.5rem 2.5rem 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,197,94,0.1);
+}
+
+.hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(
+        from 0deg at 50% 50%,
+        transparent 0deg,
+        rgba(34,197,94,0.04) 60deg,
+        transparent 120deg,
+        rgba(59,130,212,0.04) 180deg,
+        transparent 240deg,
+        rgba(34,197,94,0.03) 300deg,
+        transparent 360deg
+    );
+    animation: rotateBg 20s linear infinite;
+}
+
+@keyframes rotateBg {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.hero-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #86efac 0%, #3b82d4 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.4rem 0;
+    animation: shimmer 4s ease-in-out infinite;
+    background-size: 200% auto;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 0% center; }
+    50%  { background-position: 100% center; }
+    100% { background-position: 0% center; }
+}
+
+.hero-subtitle {
+    color: rgba(134,239,172,0.85);
+    font-size: 1.05rem;
+    font-weight: 400;
+    margin: 0 0 1.2rem 0;
+    letter-spacing: 0.02em;
+}
+
+.hero-badges {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.hero-badge {
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.30);
+    color: #86efac;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+}
+
+.hero-badge.blue {
+    background: rgba(59,130,212,0.12);
+    border-color: rgba(59,130,212,0.30);
+    color: #93c5fd;
+}
+
+.hero-badge.teal {
+    background: rgba(52,211,153,0.12);
+    border-color: rgba(52,211,153,0.30);
+    color: #6ee7b7;
+}
+
+/* ══════════════════════════════════════════════════
+   GLASS CARDS
+══════════════════════════════════════════════════ */
+.glass-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(134,239,172,0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.glass-card:hover {
+    border-color: rgba(134,239,172,0.35);
+    background: rgba(255,255,255,0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(34,197,94,0.12);
+}
+
+/* ══════════════════════════════════════════════════
+   STREAMLIT COMPONENT OVERRIDES
+══════════════════════════════════════════════════ */
+
+/* Main content area */
+.main .block-container {
+    background: transparent;
+    padding-top: 1.5rem;
+}
+
+/* Text colors on dark bg */
+.stMarkdown, .stText, label, .stSelectbox label,
+.stTextInput label, .stFileUploader label {
+    color: rgba(220,240,220,0.92) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #86efac !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg,
+        rgba(8,18,32,0.97) 0%,
+        rgba(8,25,14,0.97) 100%) !important;
+    border-right: 1px solid rgba(34,197,94,0.18) !important;
+}
+
+[data-testid="stSidebar"] * {
+    color: rgba(200,235,200,0.90) !important;
+}
+
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: #86efac !important;
+}
+
+/* Input fields */
+.stTextInput input, .stSelectbox select {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(134,239,172,0.25) !important;
+    border-radius: 10px !important;
+    color: #e2f5e2 !important;
+    transition: border-color 0.2s ease !important;
+}
+
+.stTextInput input:focus {
+    border-color: rgba(134,239,172,0.60) !important;
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.10) !important;
+}
+
+/* Primary button */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%) !important;
+    border: 1px solid rgba(134,239,172,0.35) !important;
+    border-radius: 12px !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    padding: 0.6rem 1.5rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(22,163,74,0.30) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.stButton > button[kind="primary"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(22,163,74,0.45) !important;
+    border-color: rgba(134,239,172,0.60) !important;
+}
+
+.stButton > button[kind="primary"]:active {
+    transform: translateY(0px) !important;
+}
+
+/* Secondary / other buttons */
+.stButton > button:not([kind="primary"]) {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(134,239,172,0.20) !important;
+    border-radius: 10px !important;
+    color: #86efac !important;
+    transition: all 0.2s ease !important;
+}
+
+.stButton > button:not([kind="primary"]):hover {
+    background: rgba(34,197,94,0.10) !important;
+    border-color: rgba(134,239,172,0.45) !important;
+}
+
+/* Download button */
+.stDownloadButton > button {
+    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%) !important;
+    border: 1px solid rgba(96,165,250,0.40) !important;
+    border-radius: 12px !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(29,78,216,0.25) !important;
+}
+
+.stDownloadButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(29,78,216,0.40) !important;
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(134,239,172,0.15) !important;
+    border-radius: 12px !important;
+    color: #86efac !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+.streamlit-expanderHeader:hover {
+    background: rgba(34,197,94,0.08) !important;
+    border-color: rgba(134,239,172,0.35) !important;
+}
+
+.streamlit-expanderContent {
+    background: rgba(0,0,0,0.25) !important;
+    border: 1px solid rgba(134,239,172,0.10) !important;
+    border-top: none !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Metric cards */
+[data-testid="metric-container"] {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(134,239,172,0.15) !important;
+    border-radius: 14px !important;
+    padding: 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-testid="metric-container"]:hover {
+    border-color: rgba(134,239,172,0.35) !important;
+    background: rgba(34,197,94,0.06) !important;
+    transform: translateY(-2px) !important;
+}
+
+[data-testid="metric-container"] label {
+    color: rgba(134,239,172,0.75) !important;
+    font-size: 0.82rem !important;
+}
+
+[data-testid="metric-container"] [data-testid="stMetricValue"] {
+    color: #e2f5e2 !important;
+    font-weight: 600 !important;
+}
+
+/* Info / warning / success / error boxes */
+.stAlert {
+    border-radius: 12px !important;
+    border: none !important;
+    backdrop-filter: blur(6px) !important;
+}
+
+[data-testid="stNotification"] {
+    border-radius: 12px !important;
+}
+
+/* Progress bar */
+.stProgress > div > div {
+    background: linear-gradient(90deg, #16a34a, #3b82d4, #34d399) !important;
+    border-radius: 4px !important;
+    background-size: 200% auto !important;
+    animation: progressShimmer 2s linear infinite !important;
+}
+
+@keyframes progressShimmer {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+/* File uploader */
+[data-testid="stFileUploadDropzone"] {
+    background: rgba(34,197,94,0.04) !important;
+    border: 2px dashed rgba(134,239,172,0.30) !important;
+    border-radius: 16px !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-testid="stFileUploadDropzone"]:hover {
+    background: rgba(34,197,94,0.08) !important;
+    border-color: rgba(134,239,172,0.60) !important;
+}
+
+/* Divider */
+hr {
+    border-color: rgba(134,239,172,0.15) !important;
+}
+
+/* Code blocks */
+.stCode {
+    background: rgba(0,0,0,0.40) !important;
+    border: 1px solid rgba(134,239,172,0.15) !important;
+    border-radius: 12px !important;
+}
+
+/* Dataframes */
+.stDataFrame {
+    border: 1px solid rgba(134,239,172,0.15) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+::-webkit-scrollbar-thumb {
+    background: rgba(134,239,172,0.30);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(134,239,172,0.55); }
+
+/* ── Animated leaf particles (SVG-free, CSS only) ── */
+.leaf-particle {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: rgba(134,239,172,0.25);
+    border-radius: 50% 0 50% 0;
+    pointer-events: none;
+    z-index: 0;
+    animation: leafFloat linear infinite;
+}
+
+@keyframes leafFloat {
+    0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0;   }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+}
+
+/* Agent step indicator */
+.agent-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(134,239,172,0.15);
+    border-radius: 12px;
+    padding: 0.9rem 1.2rem;
+    margin: 0.4rem 0;
+    transition: all 0.3s ease;
+}
+
+.agent-step:hover {
+    background: rgba(34,197,94,0.07);
+    border-color: rgba(134,239,172,0.35);
+}
+
+.step-num {
+    background: linear-gradient(135deg, #16a34a, #3b82d4);
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* Caption */
+.stCaption {
+    color: rgba(134,239,172,0.55) !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(255,255,255,0.03) !important;
+    border-radius: 12px !important;
+    padding: 4px !important;
+    gap: 4px !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 8px !important;
+    color: rgba(200,235,200,0.70) !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: rgba(34,197,94,0.15) !important;
+    color: #86efac !important;
+}
+
+/* Select box */
+.stSelectbox [data-baseweb="select"] {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(134,239,172,0.20) !important;
+    border-radius: 10px !important;
+}
+
+/* ── Pulse animation on diagnose button ── */
+@keyframes buttonPulse {
+    0%, 100% { box-shadow: 0 4px 15px rgba(22,163,74,0.30); }
+    50%       { box-shadow: 0 4px 30px rgba(22,163,74,0.60), 0 0 0 8px rgba(22,163,74,0.05); }
+}
+
+.stButton > button[kind="primary"] {
+    animation: buttonPulse 2.5s ease-in-out infinite !important;
+}
+
+/* Override pulse on hover */
+.stButton > button[kind="primary"]:hover {
+    animation: none !important;
+}
+</style>
+
+<div class="leaf-particle" style="left:5%;  animation-duration:14s; animation-delay:0s;   width:10px; height:10px;"></div>
+<div class="leaf-particle" style="left:15%; animation-duration:18s; animation-delay:2s;   width:6px;  height:6px;"></div>
+<div class="leaf-particle" style="left:28%; animation-duration:12s; animation-delay:4s;   width:8px;  height:8px;  background:rgba(96,165,250,0.20);"></div>
+<div class="leaf-particle" style="left:42%; animation-duration:20s; animation-delay:1s;   width:5px;  height:5px;"></div>
+<div class="leaf-particle" style="left:57%; animation-duration:16s; animation-delay:3s;   width:9px;  height:9px;"></div>
+<div class="leaf-particle" style="left:68%; animation-duration:13s; animation-delay:5s;   width:6px;  height:6px;  background:rgba(52,211,153,0.22);"></div>
+<div class="leaf-particle" style="left:78%; animation-duration:19s; animation-delay:0.5s; width:7px;  height:7px;"></div>
+<div class="leaf-particle" style="left:88%; animation-duration:15s; animation-delay:2.5s; width:10px; height:10px; background:rgba(96,165,250,0.18);"></div>
+<div class="leaf-particle" style="left:93%; animation-duration:11s; animation-delay:6s;   width:5px;  height:5px;"></div>
+<div class="leaf-particle" style="left:35%; animation-duration:22s; animation-delay:7s;   width:7px;  height:7px;  background:rgba(52,211,153,0.15);"></div>
+""", unsafe_allow_html=True)
+
 # ── Secret loader ─────────────────────────────────────────────────────────────
 # Priority: Streamlit Cloud secrets  >  .env file  >  empty string
 def _secret(key: str, default: str = "") -> str:
@@ -137,25 +652,76 @@ with st.sidebar:
     )
 
 # ── Main area ─────────────────────────────────────────────────────────────────
-st.title("🌿 Agri Doctor — Crop Disease Diagnosis & Advisory")
-st.caption(DISCLAIMER)
+
+# Hero banner
+st.markdown("""
+<div class="hero-banner">
+  <div class="hero-title">🌿 Agri Doctor</div>
+  <div class="hero-subtitle">
+    AI-Powered Crop Disease Diagnosis &amp; Farmer Advisory System
+  </div>
+  <div class="hero-badges">
+    <span class="hero-badge">🔬 Pathologist Agent</span>
+    <span class="hero-badge">👨‍🌾 Extension Officer Agent</span>
+    <span class="hero-badge blue">🤖 IBM watsonx.ai</span>
+    <span class="hero-badge teal">🛡️ 9 Guardrail Categories</span>
+    <span class="hero-badge blue">📊 LLM Evaluation Metrics</span>
+    <span class="hero-badge">🌾 Multi-Agent AI</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="glass-card" style="padding:0.9rem 1.2rem; margin-bottom:0.5rem;">
+  <span style="color:rgba(251,191,36,0.9); font-size:0.88rem;">
+    ⚠️ &nbsp;<strong>Preliminary Assessment Only</strong> &nbsp;—&nbsp; {DISCLAIMER[3:]}
+  </span>
+</div>
+""", unsafe_allow_html=True)
+
 st.divider()
 
 col_upload, col_preview = st.columns([1, 1])
 
 with col_upload:
-    st.subheader("📤 Upload Crop Image")
+    st.markdown("""
+    <div class="glass-card" style="margin-bottom:0.5rem;">
+      <span style="font-size:1.1rem; font-weight:600; color:#86efac;">
+        📤 &nbsp;Upload Crop Image
+      </span><br/>
+      <span style="font-size:0.85rem; color:rgba(134,239,172,0.65);">
+        JPG &bull; JPEG &bull; PNG &bull; Max 10 MB
+      </span>
+    </div>
+    """, unsafe_allow_html=True)
     uploaded_file = st.file_uploader(
-        "Upload a photo of the affected plant / leaf",
+        "Upload a photo of the affected plant or leaf",
         type=["jpg", "jpeg", "png"],
         help="For best results upload a clear, well-lit, close-up photo of the affected area.",
+        label_visibility="collapsed",
     )
-    diagnose_btn = st.button("🔍 Diagnose Crop", type="primary", use_container_width=True)  # noqa: deprecated in future
+    diagnose_btn = st.button("🔍 Diagnose Crop", type="primary", use_container_width=True)
 
 with col_preview:
     if uploaded_file:
-        st.subheader("🖼️ Uploaded Image")
+        st.markdown("""
+        <div class="glass-card" style="margin-bottom:0.5rem; padding:0.7rem 1rem;">
+          <span style="font-size:1rem; font-weight:600; color:#86efac;">🖼️ Uploaded Image</span>
+        </div>
+        """, unsafe_allow_html=True)
         st.image(uploaded_file, width="stretch", caption=uploaded_file.name)
+    else:
+        st.markdown("""
+        <div class="glass-card" style="min-height:200px; display:flex; align-items:center;
+             justify-content:center; text-align:center; padding:2rem;">
+          <div>
+            <div style="font-size:3rem; margin-bottom:0.5rem;">🌱</div>
+            <div style="color:rgba(134,239,172,0.55); font-size:0.92rem;">
+              Upload a crop image to see the preview here
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # ── Helper functions ──────────────────────────────────────────────────────────
