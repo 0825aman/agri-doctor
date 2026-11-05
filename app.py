@@ -724,6 +724,402 @@ with col_preview:
         """, unsafe_allow_html=True)
 
 
+st.divider()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# INFORMATION TABS — 9 Guardrail Categories + 2 Evaluation Matrix tabs
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown("<h3 style='color:#86efac; margin-bottom:0.2rem;'>📚 Reference Guide</h3>", unsafe_allow_html=True)
+st.caption("Explore all guardrail categories and evaluation matrices used in this system.")
+
+(
+    tab_gr1, tab_gr2, tab_gr3, tab_gr4, tab_gr5,
+    tab_gr6, tab_gr7, tab_gr8, tab_gr9,
+    tab_llm_eval, tab_agent_eval
+) = st.tabs([
+    "🔒 1 · Input",
+    "📤 2 · Output",
+    "🔧 3 · Tool Exec",
+    "🗄️ 4 · Data",
+    "🔐 5 · Security",
+    "⚙️ 6 · Operational",
+    "👤 7 · Human-in-Loop",
+    "🤝 8 · Multi-Agent",
+    "⚖️ 9 · Ethics",
+    "📊 LLM Eval Metrics",
+    "🤖 Agentic AI Metrics",
+])
+
+# ── Tab 1: Input Guardrails ────────────────────────────────────────────────────
+with tab_gr1:
+    st.markdown("#### 🔒 Input Guardrails")
+    st.caption("Validate user inputs before passing them to any AI agent.")
+    cols = st.columns(3)
+    items = [
+        ("🎯", "Prompt Injection Detection",
+         "Detects and blocks attempts to override agent instructions using crafted inputs."),
+        ("🚫", "Malicious Input Detection",
+         "Identifies harmful, off-topic, or abusive content before it reaches the model."),
+        ("✅", "Input Validation",
+         "Verifies image format (JPG/PNG), file size (<10 MB), and field completeness."),
+        ("🪪", "PII Detection",
+         "Scans for personal data (email, phone, Aadhaar, PAN, credit card) and masks it."),
+        ("🙅", "Inappropriate Content Filtering",
+         "Blocks clearly off-topic keywords unrelated to agricultural diagnosis."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 2: Output Guardrails ────────────────────────────────────────────────────
+with tab_gr2:
+    st.markdown("#### 📤 Output Guardrails")
+    st.caption("Validate AI-generated responses before displaying them to users.")
+    cols = st.columns(3)
+    items = [
+        ("🌀", "Hallucination Detection",
+         "Detects when the model admits it cannot see or process the image — a key hallucination signal."),
+        ("🧪", "Factual Accuracy Validation",
+         "Checks for required structured sections (symptoms, confidence, causes) in agent output."),
+        ("☣️", "Toxicity & Harmful Content Filtering",
+         "Regex-based scan for toxic, offensive, or harmful language in every response."),
+        ("🔍", "Sensitive Information Filtering",
+         "Ensures no API keys, JWT tokens, or credentials leak into displayed output."),
+        ("📏", "Response Format Validation",
+         "Checks response length (min 30 / max 15,000 chars) and disclaimer presence."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 3: Tool Execution Guardrails ──────────────────────────────────────────
+with tab_gr3:
+    st.markdown("#### 🔧 Tool Execution Guardrails")
+    st.caption("Control how AI agents interact with external tools and APIs.")
+    cols = st.columns(3)
+    items = [
+        ("📋", "Tool Access Permissions",
+         "Only whitelisted IBM watsonx model IDs are permitted — all others are blocked."),
+        ("🔑", "API Authorization",
+         "Endpoint URL is validated against an approved IBM region list before any call."),
+        ("🎛️", "Function-Call Validation",
+         "Token limits (1024/1500) and temperature ceiling (0.7) enforced per agent."),
+        ("🚧", "Restricted Tool Execution",
+         "Model IDs entered in the sidebar are checked against the permitted list at runtime."),
+        ("🛑", "Prevention of Unauthorized Actions",
+         "Any model or endpoint outside the whitelist triggers a hard stop before execution."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 4: Data Guardrails ─────────────────────────────────────────────────────
+with tab_gr4:
+    st.markdown("#### 🗄️ Data Guardrails")
+    st.caption("Protect data accessed and processed by agents.")
+    cols = st.columns(3)
+    items = [
+        ("🔏", "Data Privacy Protection",
+         "PII patterns are detected and masked before any text is passed to a model."),
+        ("🎭", "Data Masking & Anonymization",
+         "Original filenames are replaced with SHA-256 hash aliases before processing."),
+        ("👁️", "Role-Based Data Access",
+         "Agent 1 only receives image data; Agent 2 only receives the diagnosis text."),
+        ("💾", "Database Access Restrictions",
+         "Images are processed in-memory only — never written to disk or any database."),
+        ("🚫", "Prevention of Unauthorized Retrieval",
+         "No external data sources are queried; all processing is contained within the pipeline."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 5: Security Guardrails ─────────────────────────────────────────────────
+with tab_gr5:
+    st.markdown("#### 🔐 Security Guardrails")
+    st.caption("Protect the application from security threats.")
+    cols = st.columns(3)
+    items = [
+        ("💉", "Prompt Injection Protection",
+         "17 regex patterns detect and block injection attempts before they reach any model."),
+        ("🔓", "Jailbreak Detection",
+         "Scans for 11 jailbreak phrases (e.g. 'DAN mode', 'ignore your training')."),
+        ("🗄️", "SQL Injection Prevention",
+         "SQL keywords and patterns (DROP, SELECT, UNION) detected in all text fields."),
+        ("📡", "Cross-Agent Communication Security",
+         "Inter-agent payload is security-scanned at the handoff boundary before forwarding."),
+        ("🗝️", "Credential & Secret Management",
+         "API keys loaded from .env / st.secrets only — never hardcoded or logged."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 6: Operational Guardrails ──────────────────────────────────────────────
+with tab_gr6:
+    st.markdown("#### ⚙️ Operational Guardrails")
+    st.caption("Control agent execution and resource consumption.")
+    cols = st.columns(3)
+    items = [
+        ("⏱️", "Maximum Execution Time",
+         "Each agent is limited to 120 seconds. Timeout triggers a clear error message."),
+        ("🔢", "Token Usage Limits",
+         "Pathologist: max 1,024 tokens. Extension Officer: max 1,500 tokens."),
+        ("🚦", "API Rate Limiting",
+         "Rate limit (HTTP 429) errors are caught and shown with a retry prompt."),
+        ("🔄", "Maximum Agent Iterations",
+         "Each agent is limited to 2 calls per run. Exceeding this halts the pipeline."),
+        ("💰", "Cost Monitoring",
+         "Token counts and estimated USD cost are computed and shown after every run."),
+        ("🔁", "Retry & Failure Handling",
+         "Up to 3 retries per agent. All errors are caught and displayed with remediation hints."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 7: Human-in-the-Loop Guardrails ────────────────────────────────────────
+with tab_gr7:
+    st.markdown("#### 👤 Human-in-the-Loop Guardrails")
+    st.caption("Ensure human approval and expert review for critical decisions.")
+    cols = st.columns(3)
+    items = [
+        ("🆘", "Expert Escalation Trigger",
+         "Keywords like 'unknown disease', 'severe', 'epidemic' trigger an escalation banner."),
+        ("🔬", "Chemical Treatment Notice",
+         "Any mention of pesticide or fungicide application triggers a safety warning banner."),
+        ("✋", "Manual Verification Prompt",
+         "All outputs are labelled as AI-generated preliminary assessments requiring expert verification."),
+        ("👨‍⚕️", "Escalation to Human Experts",
+         "Users are directed to local agricultural extension officers when confidence is low."),
+        ("📋", "Advisory Review Gate",
+         "Final report clearly labels both agent outputs and advises confirmation before any action."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 8: Multi-Agent Guardrails ──────────────────────────────────────────────
+with tab_gr8:
+    st.markdown("#### 🤝 Multi-Agent Guardrails")
+    st.caption("Ensure safe coordination between the Pathologist and Extension Officer agents.")
+    cols = st.columns(3)
+    items = [
+        ("🎫", "Agent-Level Access Control",
+         "Each agent is registered with permitted input/output types enforced at runtime."),
+        ("📝", "Task Assignment Validation",
+         "Agent 1 receives only image data; Agent 2 only receives the diagnosis — no cross-contamination."),
+        ("🔎", "Cross-Agent Output Verification",
+         "Agent 1 output is security-scanned before being passed to Agent 2."),
+        ("📡", "Agent Communication Monitoring",
+         "Handoff payload size, content, and security are validated at the agent boundary."),
+        ("🔃", "Conflict Resolution",
+         "If Agent 1 returns an empty/invalid response, the pipeline halts with a clear error."),
+        ("♾️", "Prevention of Infinite Loops",
+         "Per-agent call counters — max 5 iterations — prevent runaway agent execution."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 9: Ethical & Compliance Guardrails ────────────────────────────────────
+with tab_gr9:
+    st.markdown("#### ⚖️ Ethical & Compliance Guardrails")
+    st.caption("Ensure responsible and compliant AI behaviour.")
+    cols = st.columns(3)
+    items = [
+        ("⚖️", "Bias Detection",
+         "Scans for absolute/generalizing language ('all farmers must', 'always apply')."),
+        ("🎯", "Fairness Validation",
+         "Responses are checked to avoid stereotyping farming practices or communities."),
+        ("💡", "Explainability",
+         "Agent outputs must contain causal reasoning markers (because, caused by, indicates)."),
+        ("📜", "Regulatory Compliance",
+         "Chemical recommendations include product label and local regulation references."),
+        ("🤝", "Responsible AI Principles",
+         "Every output is labelled preliminary. No fabricated dosages are presented as fact."),
+        ("🗂️", "Audit Trails",
+         "Every guardrail check is timestamped and stored in a full audit log shown in-app."),
+    ]
+    for i, (icon, title, desc) in enumerate(items):
+        with cols[i % 3]:
+            st.markdown(f"""
+            <div class="glass-card" style="min-height:130px;">
+              <div style="font-size:1.6rem;">{icon}</div>
+              <div style="color:#86efac; font-weight:600; margin:0.3rem 0 0.4rem;">{title}</div>
+              <div style="color:rgba(200,235,200,0.75); font-size:0.85rem;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 10: LLM Evaluation Metrics ────────────────────────────────────────────
+with tab_llm_eval:
+    st.markdown("#### 📊 Evaluation Metrics for LLMs")
+    st.caption("Standard metrics used to measure LLM quality, accuracy, safety, and cost.")
+
+    sections = [
+        ("🎯 Accuracy & Quality Metrics", [
+            ("Accuracy",           "Measures correctness of generated answers against expected outputs."),
+            ("Precision",          "How many generated relevant results are actually correct."),
+            ("Recall",             "How many relevant results are successfully retrieved."),
+            ("F1 Score",           "Harmonic mean of precision and recall — balances both."),
+            ("Exact Match (EM)",   "Checks whether the generated answer exactly matches the expected."),
+            ("Semantic Similarity","Jaccard/embedding similarity between generated and reference answers."),
+            ("ROUGE-L",            "Longest common subsequence overlap with reference text."),
+            ("BLEU-1",             "Unigram precision of generated text against reference."),
+        ]),
+        ("🔍 RAG Evaluation Metrics", [
+            ("Context Precision",  "Whether retrieved documents are relevant to the query."),
+            ("Context Recall",     "Whether all relevant information is retrieved."),
+            ("Faithfulness",       "Whether the answer is supported by retrieved context."),
+            ("Answer Relevancy",   "How relevant the answer is to the user query."),
+            ("Context Relevancy",  "Relevance of retrieved context to the question."),
+            ("Groundedness",       "Whether generated responses are grounded in source data."),
+        ]),
+        ("⚡ Performance & Cost Metrics", [
+            ("Response Latency",       "End-to-end time taken to generate a complete response."),
+            ("Time to First Token",    "Time taken to generate the first response token (TTFT)."),
+            ("Tokens per Second",      "Generation speed — output tokens divided by latency."),
+            ("Input Tokens",           "Number of tokens sent to the LLM in the prompt."),
+            ("Output Tokens",          "Number of tokens generated by the LLM in the response."),
+            ("Cost per Request",       "Estimated USD cost based on token count and pricing tier."),
+            ("Cost per Successful Task","Cost of successfully completing one full diagnosis run."),
+            ("Throughput",             "Number of requests processed per unit of time."),
+            ("Error Rate",             "Percentage of failed LLM requests across all runs."),
+        ]),
+        ("🛡️ Safety & Guardrail Metrics", [
+            ("Hallucination Rate",         "Percentage of responses containing unsupported claims."),
+            ("Toxicity Score",             "Presence of harmful, offensive, or toxic content."),
+            ("Bias Score",                 "Potential bias detected in generated responses."),
+            ("Prompt Injection Resistance","Measure of resistance to malicious prompt instructions."),
+            ("PII Leakage Rate",           "Accidental exposure of personal information in output."),
+            ("Policy Violation Rate",      "Responses violating defined safety or ethical policies."),
+            ("Guardrail Intervention Rate","How frequently guardrails block or modify outputs."),
+        ]),
+    ]
+
+    for section_title, metrics in sections:
+        st.markdown(f"<h5 style='color:#86efac; margin-top:1.2rem;'>{section_title}</h5>",
+                    unsafe_allow_html=True)
+        header_col, desc_col = st.columns([1, 2])
+        header_col.markdown("<span style='color:rgba(134,239,172,0.55); font-size:0.78rem; font-weight:600;'>METRIC</span>",
+                            unsafe_allow_html=True)
+        desc_col.markdown("<span style='color:rgba(134,239,172,0.55); font-size:0.78rem; font-weight:600;'>DESCRIPTION</span>",
+                          unsafe_allow_html=True)
+        for metric, desc in metrics:
+            c1, c2 = st.columns([1, 2])
+            c1.markdown(f"""
+            <div class="glass-card" style="padding:0.5rem 0.8rem; margin:0.15rem 0;">
+              <span style="color:#86efac; font-weight:600; font-size:0.88rem;">{metric}</span>
+            </div>""", unsafe_allow_html=True)
+            c2.markdown(f"""
+            <div class="glass-card" style="padding:0.5rem 0.8rem; margin:0.15rem 0;">
+              <span style="color:rgba(200,235,200,0.80); font-size:0.88rem;">{desc}</span>
+            </div>""", unsafe_allow_html=True)
+
+# ── Tab 11: Agentic AI Evaluation Metrics ─────────────────────────────────────
+with tab_agent_eval:
+    st.markdown("#### 🤖 Agentic AI Evaluation Metrics")
+    st.caption("Metrics for evaluating individual agents and multi-agent system performance.")
+
+    agent_sections = [
+        ("🎯 Core Agent Metrics", [
+            ("Task Completion Rate",       "Percentage of tasks successfully completed by the agent."),
+            ("Goal Achievement",           "Whether the agent achieves its assigned objective end-to-end."),
+            ("Tool Call Accuracy",         "Whether the correct tools/models are selected and invoked."),
+            ("Tool Execution Success Rate","Percentage of tool/API calls that succeed without error."),
+            ("Planning Accuracy",          "Quality of the agent's execution plan (structured steps)."),
+            ("Reasoning Quality",          "Logical consistency and causal depth of the agent's reasoning."),
+        ]),
+        ("🤝 Multi-Agent System Metrics", [
+            ("Agent Coordination Score",      "Composite: handoff quality, task completion, consistency."),
+            ("Handoff Accuracy",              "Correctness and completeness of inter-agent data transfer."),
+            ("Loop Detection",                "Identifies repetitive or infinite agent execution cycles."),
+            ("Inter-Agent Consistency",       "Semantic overlap between Agent 1 and Agent 2 outputs."),
+            ("Agent-to-Agent Comm. Success",  "Whether inter-agent messages are valid and security-clean."),
+            ("Task Distribution Efficiency",  "Latency and token share split between agents (balance)."),
+        ]),
+        ("📋 System-Level Metrics", [
+            ("End-to-End Completion",      "Whether the full pipeline (both agents + report) completed."),
+            ("Total Execution Time",       "Combined latency of all agents in the workflow."),
+            ("Total Cost",                 "Aggregated token-based cost for the entire multi-agent run."),
+            ("Supervisor Agent Accuracy",  "Quality of the orchestrator's task assignment decisions."),
+            ("Conflict Resolution",        "How the system handles empty or contradictory agent outputs."),
+            ("Individual Agent Accuracy",  "Per-agent domain keyword hit rate and section completeness."),
+        ]),
+    ]
+
+    for section_title, metrics in agent_sections:
+        st.markdown(f"<h5 style='color:#86efac; margin-top:1.2rem;'>{section_title}</h5>",
+                    unsafe_allow_html=True)
+        for metric, desc in metrics:
+            c1, c2 = st.columns([1, 2])
+            c1.markdown(f"""
+            <div class="glass-card" style="padding:0.5rem 0.8rem; margin:0.15rem 0;">
+              <span style="color:#93c5fd; font-weight:600; font-size:0.88rem;">{metric}</span>
+            </div>""", unsafe_allow_html=True)
+            c2.markdown(f"""
+            <div class="glass-card" style="padding:0.5rem 0.8rem; margin:0.15rem 0;">
+              <span style="color:rgba(200,235,200,0.80); font-size:0.88rem;">{desc}</span>
+            </div>""", unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown("""
+    <div class="glass-card" style="border-color:rgba(96,165,250,0.30); background:rgba(59,130,212,0.06);">
+      <div style="color:#93c5fd; font-weight:600; margin-bottom:0.5rem;">
+        📊 Live Metrics Dashboard
+      </div>
+      <div style="color:rgba(200,230,255,0.80); font-size:0.88rem; line-height:1.7;">
+        After running a diagnosis, all metrics above are computed automatically and stored.<br/>
+        Open the <strong>Performance Dashboard</strong> by running
+        <code style="background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">
+          streamlit run dashboard.py
+        </code>
+        for full interactive charts, trend analysis, and JSON/CSV export.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.divider()
+
 # ── Helper functions ──────────────────────────────────────────────────────────
 
 def encode_image_base64(file_obj) -> str:
