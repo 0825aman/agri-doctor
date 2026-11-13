@@ -13,7 +13,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from ibm_watsonx_ai import Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
+from ibm_watsonx_ai.foundation_models.schema import TextChatParameters
 from metrics import build_run_metrics, get_run_history
 from guardrails import (
     # Input
@@ -1030,11 +1030,8 @@ def run_pathologist_agent(
         model_id=v_model,
         credentials=credentials,
         project_id=proj_id,
-        params={
-            GenParams.MAX_NEW_TOKENS: 1024,
-            GenParams.TEMPERATURE: 0.2,
-        },
     )
+    _chat_params_v = TextChatParameters(max_tokens=1024, temperature=0.2)
 
     system_prompt = (
         "You are an expert agricultural plant pathologist AI assistant. "
@@ -1080,7 +1077,7 @@ def run_pathologist_agent(
     ]
 
     try:
-        response = model.chat(messages=multimodal_messages)
+        response = model.chat(messages=multimodal_messages, params=_chat_params_v)
         return response["choices"][0]["message"]["content"]
     except Exception as vision_err:
         vision_err_str = str(vision_err).lower()
@@ -1105,7 +1102,7 @@ def run_pathologist_agent(
                     ),
                 },
             ]
-            response = model.chat(messages=text_only_messages)
+            response = model.chat(messages=text_only_messages, params=_chat_params_v)
             return (
                 "[NOTE: Image analysis requires a vision-capable model. "
                 "The current model (ibm/granite-4-h-small) is text-only. "
@@ -1131,11 +1128,8 @@ def run_extension_officer_agent(
         model_id=t_model,
         credentials=credentials,
         project_id=proj_id,
-        params={
-            GenParams.MAX_NEW_TOKENS: 1500,
-            GenParams.TEMPERATURE: 0.3,
-        },
     )
+    _chat_params_t = TextChatParameters(max_tokens=1500, temperature=0.3)
 
     system_prompt = (
         "You are a knowledgeable and friendly agricultural extension officer AI. "
@@ -1173,7 +1167,7 @@ def run_extension_officer_agent(
         {"role": "user",   "content": user_message},
     ]
 
-    response = model.chat(messages=messages)
+    response = model.chat(messages=messages, params=_chat_params_t)
     return response["choices"][0]["message"]["content"]
 
 
