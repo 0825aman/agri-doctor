@@ -1,0 +1,60 @@
+# .ceignore — IBM Cloud Code Engine source upload exclusions
+# Syntax mirrors .dockerignore (glob patterns, one per line)
+
+# ── Python runtime artifacts ──────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env.bak
+
+# ── Secrets & credentials (NEVER upload) ─────────────────────────────────────
+.env
+*.env
+.env.*
+.streamlit/secrets.toml
+
+# ── Git metadata ──────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.github/
+
+# ── IDE & OS artifacts ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Dev containers ────────────────────────────────────────────────────────────
+.devcontainer/
+
+# ── Local test & notebook files ───────────────────────────────────────────────
+*.ipynb
+.ipynb_checkpoints/
+tests/
+test_*.py
+*_test.py
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Temporary files ───────────────────────────────────────────────────────────
+*.tmp
+*.temp
+tmp/
+temp/
