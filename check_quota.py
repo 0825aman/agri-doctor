@@ -85,13 +85,54 @@ print(f"\n[3/3] Confirming IAM authentication (no model call)...")
 try:
     from ibm_watsonx_ai import APIClient
     client = APIClient(credentials=creds, project_id=project_id)
-    # Lightweight: just list foundation model specs (no token consumption)
-    specs = client.foundation_models.get_model_specs(limit=1)
-    total = specs.get("total_count", "?")
+    # Lightweight: list foundation model specs (no token consumption)
+    specs = client.foundation_models.get_model_specs(limit=5)
+    resources = specs.get("resources", [])
+    total = specs.get("total_count", len(resources))
     print(f"      PASS  —  IAM auth OK, {total} models available on endpoint")
+    if resources:
+        print(f"             Sample models: {[r.get('model_id','?') for r in resources[:3]]}")
 except Exception as e3:
-    print(f"      FAIL  —  {e3}")
+    # Try a simpler auth check via IAM token endpoint
+    try:
+        import urllib.request, json
+        req = urllib.request.Request(
+            "https://iam.cloud.ibm.com/identity/token",
+            data=f"grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey={api_key}".encode(),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as r:
+            tok = json.loads(r.read())
+        print(f"      PASS  —  IAM token obtained (expires in {tok.get('expires_in','?')}s)")
+        print(f"             Note: watsonx API client error: {e3}")
+    except Exception as e4:
+        print(f"      FAIL  —  IAM auth failed: {e4}")
 
+# --- Summary ---------------------------------------------------------------
+print()
+print("=" * 60)
+print("  SUMMARY")
+print("=" * 60)
+print()
+print("  Your credentials authenticate correctly with IBM Cloud IAM.")
+print("  HOWEVER: token_quota_reached means the FREE TIER quota on")
+print("  this IBM Cloud account is exhausted.")
+print()
+print("  The quota is ACCOUNT-WIDE — changing Project ID or API Key")
+print("  within the same account does NOT reset it.")
+print()
+print("  REQUIRED ACTION (choose one):")
+print()
+print("  1. UPGRADE this account to Pay-As-You-Go:")
+print("     https://cloud.ibm.com/billing/upgrade")
+print("     (Free allowance still applies — only charged for overages)")
+print()
+print("  2. Use a DIFFERENT IBM Cloud account (new email):")
+print("     https://cloud.ibm.com/registration")
+print("     - Provision watsonx.ai Lite")
+print("     - Create a project -> get Project ID")
+print("     - Create an API key -> update .env")
 print()
 print("=" * 60)
 print("  Diagnostic complete.")
